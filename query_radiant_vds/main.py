@@ -14,6 +14,12 @@ async def main(
     search_filter: str,
     username: str,
     password: str,
+    attributes: Optional[str] = None,
+    scope: str = "sub",
+    context: Optional[str] = None,
+    return_mode: Optional[str] = None,
+    result_limit: int = 0,
+    page_size: int = 100,
     proxies: Optional[dict] = None,
 ) -> None:
     """Orchestrate ADAP search and JSON output.
@@ -24,6 +30,12 @@ async def main(
         search_filter: LDAP search filter
         username: Authentication username
         password: Authentication password
+        attributes: Comma-separated attributes to return (None = all)
+        scope: Search scope (base, one, sub) - default "sub"
+        context: Search context (None = all)
+        return_mode: Return mode (None = default)
+        result_limit: Max results to return (0 = no limit)
+        page_size: Results per page
         proxies: Optional proxy configuration
     """
     adap_url = f"https://{domain}:{port}/adap"
@@ -32,6 +44,12 @@ async def main(
         search_adap(
             url=adap_url,
             search_filter=search_filter,
+            attributes=attributes,
+            scope=scope,
+            context=context,
+            return_mode=return_mode,
+            result_limit=result_limit,
+            page_size=page_size,
             username=username,
             password=password,
             proxies=proxies,

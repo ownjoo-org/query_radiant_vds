@@ -84,18 +84,60 @@ async def get_response(
 @timed_async_generator(log_progress=False, log_level=logging.DEBUG, logger=logger)
 async def list_results_paginated(
     url: str,
+    search_filter: str,
+    attributes: Optional[str] = None,
+    scope: str = "sub",
+    context: Optional[str] = None,
+    return_mode: Optional[str] = None,
+    result_limit: int = 0,
+    page_size: int = 100,
     additional_params: Optional[dict] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
     proxies: Optional[dict] = None,
 ) -> AsyncGenerator[dict, None]:
-    should_continue: bool = True
-    params: dict = {
-        "page": 1,
-    }
-    if isinstance(additional_params, dict):
-        params.update(additional_params)
-    while should_continue:
+    """Paginate through ADAP search results.
+
+    Args:
+        url: ADAP endpoint URL
+        search_filter: LDAP search filter
+        attributes: Comma-separated attributes to return (None = all)
+        scope: Search scope (base, one, sub) - default "sub"
+        context: Search context (None = all)
+        return_mode: Return mode (None = default)
+        result_limit: Max results to return (0 = no limit)
+        page_size: Results per page
+        additional_params: Additional query parameters
+        username: Username for authentication
+        password: Password for authentication
+        proxies: Optional proxy configuration
+    """
+    # Optimize page_size if result_limit is set
+    if result_limit > 0 and page_size > result_limit:
+        page_size = result_limit
+
+    total_returned: int = 0
+    page: int = 1
+
+    while True:
+        params: dict = {
+            "searchFilter": search_filter,
+            "scope": scope,
+            "pageSize": page_size,
+            "page": page,
+        }
+
+        if attributes:
+            params["attributes"] = attributes
+        if context:
+            params["context"] = context
+        if return_mode:
+            params["returnMode"] = return_mode
+
+        # Merge with additional_params if provided
+        if isinstance(additional_params, dict):
+            params.update(additional_params)
+
         data_raw: dict = await get_response(
             method="GET",
             url=url,
@@ -105,11 +147,23 @@ async def list_results_paginated(
             proxies=proxies,
         )
         results: list[dict] = get_value(src=data_raw, path=["results"], exp=list, default=[])
-        if not results or not get_value(src=data_raw, path=["info", "next"], exp=str):
-            should_continue = False
-        params["page"] += 1
+
+        if not results:
+            break
+
         for result in results:
             yield result
+            total_returned += 1
+
+            # Stop if result_limit reached
+            if result_limit > 0 and total_returned >= result_limit:
+                return
+
+        # Check if there are more pages
+        if not get_value(src=data_raw, path=["info", "next"], exp=str):
+            break
+
+        page += 1
 
 
 async def list_results(
@@ -138,6 +192,12 @@ async def list_results(
 async def search_adap(
     url: str,
     search_filter: str,
+    attributes: Optional[str] = None,
+    scope: str = "sub",
+    context: Optional[str] = None,
+    return_mode: Optional[str] = None,
+    result_limit: int = 0,
+    page_size: int = 100,
     username: Optional[str] = None,
     password: Optional[str] = None,
     proxies: Optional[dict] = None,
@@ -148,6 +208,12 @@ async def search_adap(
     Args:
         url: Base ADAP endpoint URL (e.g., https://server:port/adap)
         search_filter: LDAP search filter (e.g., "(cn=*)")
+        attributes: Comma-separated attributes to return (None = all)
+        scope: Search scope (base, one, sub) - default "sub"
+        context: Search context (None = all)
+        return_mode: Return mode (None = default)
+        result_limit: Max results to return (0 = no limit)
+        page_size: Results per page
         username: Username for authentication
         password: Password for authentication
         proxies: Optional proxy configuration
@@ -155,7 +221,13 @@ async def search_adap(
     """
     async for result in list_results_paginated(
         url=url,
-        additional_params={"searchFilter": search_filter},
+        search_filter=search_filter,
+        attributes=attributes,
+        scope=scope,
+        context=context,
+        return_mode=return_mode,
+        result_limit=result_limit,
+        page_size=page_size,
         username=username,
         password=password,
         proxies=proxies,
