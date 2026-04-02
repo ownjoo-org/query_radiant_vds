@@ -1,7 +1,7 @@
 """Unit tests for template_cli.client module."""
 
 from asyncio import Queue
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 

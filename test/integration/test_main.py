@@ -29,8 +29,9 @@ async def test_main_constructs_adap_url() -> None:
         mock_search = AsyncMock()
         mock_output = AsyncMock()
 
-        with patch("template_cli.main.search_adap", mock_search), patch(
-            "template_cli.main.json_out", mock_output
+        with (
+            patch("template_cli.main.search_adap", mock_search),
+            patch("template_cli.main.json_out", mock_output),
         ):
 
             await main(
