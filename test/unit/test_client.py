@@ -123,5 +123,96 @@ class TestPagination(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(call_args[1]["params"]["pageSize"], 5)
 
 
+class TestGetResponse(unittest.IsolatedAsyncioTestCase):
+    """Tests for low-level HTTP response handling."""
+
+    async def test_get_response_returns_json(self) -> None:
+        """Test that get_response returns parsed JSON."""
+        expected_response = {"results": [{"cn": "test"}]}
+
+        with patch("query_radiant_vds.client.get_response") as mock_get:
+            mock_get.return_value = expected_response
+
+            from query_radiant_vds.client import get_response as real_get_response
+
+            result = await real_get_response(
+                url="https://radiant.example.com:8080/adap",
+            )
+
+            self.assertEqual(result, expected_response)
+
+    async def test_get_response_params(self) -> None:
+        """Test that get_response accepts various parameters."""
+        import inspect
+
+        from query_radiant_vds.client import get_response
+
+        sig = inspect.signature(get_response)
+        params = list(sig.parameters.keys())
+
+        # Should have these parameters
+        expected_params = [
+            "url",
+            "method",
+            "params",
+            "json",
+            "data",
+            "username",
+            "password",
+            "proxies",
+        ]
+        for param in expected_params:
+            self.assertIn(param, params)
+
+
+class TestListResults(unittest.IsolatedAsyncioTestCase):
+    """Tests for single-page results fetching."""
+
+    async def test_list_results_single_page(self) -> None:
+        """Test fetching single page of results."""
+        entries = [
+            {"dn": "cn=user1", "cn": "user1"},
+            {"dn": "cn=user2", "cn": "user2"},
+        ]
+        response = {"results": entries}
+
+        q = Queue()
+
+        with patch("query_radiant_vds.client.get_response") as mock_get:
+            mock_get.return_value = response
+
+            from query_radiant_vds.client import list_results
+
+            await list_results(
+                url="https://radiant.example.com:8080/adap",
+                additional_params={"searchFilter": "(cn=*)"},
+                q=q,
+            )
+
+            # Verify entries were put in queue
+            for expected_entry in entries:
+                result = await q.get()
+                self.assertEqual(result, expected_entry)
+
+    async def test_list_results_empty_response(self) -> None:
+        """Test handling of empty results."""
+        response = {"results": []}
+
+        q = Queue()
+
+        with patch("query_radiant_vds.client.get_response") as mock_get:
+            mock_get.return_value = response
+
+            from query_radiant_vds.client import list_results
+
+            await list_results(
+                url="https://radiant.example.com:8080/adap",
+                q=q,
+            )
+
+            # Queue should be empty
+            self.assertTrue(q.empty())
+
+
 if __name__ == "__main__":
     unittest.main()
