@@ -1,0 +1,6 @@
+funcy
+httpx
+httpx[http2]
+retry-async
+
+ownjoo_utils @ git+https://github.com/ownjoo-org/utils.git
