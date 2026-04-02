@@ -18,9 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
-    "pytest-asyncio>=0.21.0",
+    "coverage>=4.0",
     "black>=23.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
@@ -55,8 +53,3 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
-
-[tool.pytest.ini_options]
-testpaths = ["test"]
-addopts = "--cov=query_radiant_vds --cov-report=html --cov-report=term-missing"
-asyncio_mode = "auto"
