@@ -10,7 +10,7 @@ A Python CLI application for querying Radiant Logic IDM v8.1 via the ADAP (REST)
 - **Basic Authentication** — HTTP Basic Auth with base64-encoded credentials
 - **Structured Logging** — Integration with `ownjoo-org/utils` logging utilities
 - **Type-Safe** — Full type hints with mypy validation
-- **Comprehensive Testing** — Unit and integration tests with pytest
+- **Comprehensive Testing** — Unit and integration tests with unittest
 
 ## Setup
 
@@ -121,13 +121,14 @@ make run              # Show CLI help
 
 ```bash
 # Run all tests
-pytest
+python -m unittest discover test/
 
 # Run with coverage
-pytest --cov=query_radiant_vds
+coverage run -m unittest discover test/
+coverage report -m
 
 # Run specific test file
-pytest test/unit/test_client.py -v
+python -m unittest test.unit.test_client -v
 ```
 
 ### Code Quality
@@ -137,8 +138,8 @@ The project uses:
 - **black** for code formatting
 - **ruff** for linting
 - **mypy** for type checking
-- **pytest** for testing
-- **pytest-asyncio** for async test support
+- **unittest** for testing (built-in, no external dependencies)
+- **coverage** for code coverage reporting
 
 All checks run automatically in the CI/CD pipeline (GitHub Actions).
 
@@ -161,18 +162,22 @@ query_radiant_vds/
 
 #### Async Client (`client.py`)
 
-- `get_response()` — Async HTTP request with retry logic
-- `list_results_paginated()` — Async generator for paginated endpoints
-- `list_characters/locations/episodes()` — Concurrent endpoint fetchers
+- `get_response()` — Async HTTP request with retry logic and automatic retry
+- `list_results_paginated()` — Async generator for paginated ADAP queries with result limiting
+- `search_adap()` — Main entry point for ADAP directory searches
 
 #### Queue Coordination
 
 ```python
 q = Queue(maxsize=100)
 await gather(
-    list_characters(url=domain, q=q),
-    list_locations(url=domain, q=q),
-    list_episodes(url=domain, q=q),
+    search_adap(
+        url=f"https://{domain}:{port}/adap",
+        search_filter=search_filter,
+        username=username,
+        password=password,
+        q=q,
+    ),
     json_out(q=q),
     q.join(),
 )
@@ -200,7 +205,7 @@ This project adheres to [ownjoo-org](https://github.com/ownjoo-org) standards:
 - **Security by Default** — No OWASP Top 10 vulnerabilities
 - **Explicit Commits** — Use conventional commits with clear history
 
-See the [claude configuration hub](https://github.com/ownjoo-org/claude) for full guidelines.
+See [template_cli](https://github.com/ownjoo-org/template_cli) for reusable patterns and testing strategies documented in PATTERNS.md and TESTING.md.
 
 ## License
 
