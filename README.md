@@ -1,12 +1,12 @@
-# template_cli
+# query_radiant_vds
 
-A template Python CLI application demonstrating async HTTP patterns with `httpx`, `asyncio`, and `ownjoo-org/utils`.
+A Python CLI application for querying Radiant Logic IDM v8.1 via the ADAP (REST) endpoint. Demonstrates async HTTP patterns with `httpx`, `asyncio`, and `ownjoo-org/utils`.
 
 ## Features
 
-- **Async HTTP Client** — Uses `httpx` with HTTP/2 support for concurrent API requests
+- **Async HTTP Client** — Uses `httpx` with HTTP/2 support for ADAP queries
 - **Automatic Retries** — Built-in retry logic with exponential backoff via `retry-async`
-- **Queue-Based Coordination** — Coordinates concurrent fetchers and output parser using `asyncio.Queue`
+- **Queue-Based Coordination** — Coordinates ADAP search and JSON output using `asyncio.Queue`
 - **Basic Authentication** — HTTP Basic Auth with base64-encoded credentials
 - **Structured Logging** — Integration with `ownjoo-org/utils` logging utilities
 - **Type-Safe** — Full type hints with mypy validation
@@ -18,13 +18,14 @@ A template Python CLI application demonstrating async HTTP patterns with `httpx`
 
 - Python 3.10+
 - pip
+- Radiant Logic IDM v8.1 instance with ADAP endpoint enabled
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/ownjoo-org/template_cli.git
-cd template_cli
+git clone https://github.com/ownjoo-org/query_radiant_vds.git
+cd query_radiant_vds
 
 # Install development dependencies
 pip install -e ".[dev]"
@@ -35,21 +36,29 @@ pip install -e ".[dev]"
 ### Basic Command
 
 ```bash
-python main.py --username <username> --password <password> --domain <api_domain>
+python main.py \
+  --username <username> \
+  --password <password> \
+  --domain <radiant-fqdn> \
+  --port <adap-port> \
+  --search-filter "<ldap-filter>"
 ```
 
 ### Options
 
 ```
 $ python main.py --help
-usage: main.py [-h] --username USERNAME --password PASSWORD [--domain DOMAIN]
-                [--proxies PROXIES] [--log-level LOG_LEVEL]
+usage: main.py [-h] --username USERNAME --password PASSWORD --domain DOMAIN
+                [--port PORT] --search-filter SEARCH_FILTER [--proxies PROXIES]
+                [--log-level LOG_LEVEL]
 
 options:
   -h, --help                     show this help message and exit
   --username USERNAME            Username for authentication (required)
   --password PASSWORD            Password for authentication (required)
-  --domain DOMAIN                The FQDN for your API (default: example.com)
+  --domain DOMAIN                RadiantOne server FQDN or IP address (required)
+  --port PORT                    ADAP endpoint port (default: 8080)
+  --search-filter SEARCH_FILTER  LDAP search filter, e.g. "(cn=*)" (required)
   --proxies PROXIES              JSON structure specifying 'http' and 'https' proxy URLs
   --log-level LOG_LEVEL          Logging level 0 (NOTSET) - 50 (CRITICAL) (default: 20)
 ```
@@ -57,24 +66,38 @@ options:
 ### Examples
 
 ```bash
-# Query Rick and Morty API
+# Search for all entries
 python main.py \
-  --username testuser \
-  --password testpass \
-  --domain https://rickandmortyapi.com/api
+  --username admin \
+  --password secret \
+  --domain radiant.example.com \
+  --port 8080 \
+  --search-filter "(objectClass=*)"
 
-# With proxy configuration
+# Search for users by cn
 python main.py \
-  --username testuser \
-  --password testpass \
-  --domain https://rickandmortyapi.com/api \
+  --username admin \
+  --password secret \
+  --domain radiant.example.com \
+  --port 8080 \
+  --search-filter "(cn=john*)"
+
+# Search with custom port and proxy
+python main.py \
+  --username admin \
+  --password secret \
+  --domain radiant.example.com \
+  --port 9443 \
+  --search-filter "(mail=*@example.com)" \
   --proxies '{"http": "http://proxy:8080", "https": "https://proxy:8080"}'
 
 # With debug logging
 python main.py \
-  --username testuser \
-  --password testpass \
-  --domain https://rickandmortyapi.com/api \
+  --username admin \
+  --password secret \
+  --domain radiant.example.com \
+  --port 8080 \
+  --search-filter "(uid=*)" \
   --log-level 10
 ```
 

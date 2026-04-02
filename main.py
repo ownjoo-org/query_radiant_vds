@@ -27,10 +27,23 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--domain',
-        default='example.com',
         type=str,
+        required=True,
+        help='RadiantOne server FQDN or IP address',
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
         required=False,
-        help='The FQDN for your API (not full URL)',
+        default=8080,
+        help='ADAP endpoint port (default: 8080)',
+    )
+    parser.add_argument(
+        '--search-filter',
+        type=str,
+        required=True,
+        help='LDAP search filter (e.g., "(cn=*)" or "(objectClass=*)")',
+        dest='search_filter',
     )
     parser.add_argument(
         '--proxies',
@@ -64,4 +77,13 @@ if __name__ == '__main__':
         except Exception as exc_json:
             logger.warning(f'failure parsing proxies: {exc_json}: proxies provided: {args.proxies}')
 
-    run(main(domain=args.domain, username=args.username, password=args.password, proxies=proxies))
+    run(
+        main(
+            domain=args.domain,
+            port=args.port,
+            search_filter=args.search_filter,
+            username=args.username,
+            password=args.password,
+            proxies=proxies,
+        )
+    )

@@ -1,6 +1,6 @@
 import base64
 import logging
-from asyncio import Queue, get_running_loop
+from asyncio import Queue
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
@@ -8,16 +8,23 @@ from ownjoo_utils import get_value
 from ownjoo_utils.logging.decorators import timed_async_generator
 from retry_async import retry
 
-from template_cli.consts import RETRY_COUNT, RETRY_BACKOFF_FACTOR
-from template_cli.tracker import contributing_tasks
+from template_cli.consts import RETRY_BACKOFF_FACTOR, RETRY_COUNT
 
 logger = logging.getLogger(__name__)
 
 
-@retry(exceptions=Exception, tries=RETRY_COUNT, delay=1, backoff=RETRY_BACKOFF_FACTOR, max_delay=5, logger=logger, is_async=True)
+@retry(
+    exceptions=Exception,
+    tries=RETRY_COUNT,
+    delay=1,
+    backoff=RETRY_BACKOFF_FACTOR,
+    max_delay=5,
+    logger=logger,
+    is_async=True,
+)
 async def get_response(
     url: str,
-    method: str = 'GET',
+    method: str = "GET",
     params=None,
     json: Optional[dict] = None,
     data: Optional[dict] = None,
@@ -32,20 +39,22 @@ async def get_response(
 
             session.headers.update(
                 {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
                 }
             )
 
             # Add basic auth header if credentials provided
             if username and password:
-                credentials = base64.b64encode(f'{username}:{password}'.encode()).decode()
-                session.headers.update({'Authorization': f'Basic {credentials}'})
+                credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+                session.headers.update({"Authorization": f"Basic {credentials}"})
 
-            session.verify = False  # for convenience...  evaluate for yourself if this is acceptable.
+            session.verify = (
+                False  # for convenience...  evaluate for yourself if this is acceptable.
+            )
 
             r: Response = await session.request(
-                method=method or 'GET',
+                method=method or "GET",
                 url=url,
                 data=data,
                 json=json,
@@ -59,19 +68,16 @@ async def get_response(
                 return None
             else:
                 logger.exception(
-                    f'HTTP Error: {exc_status=}:\n'
-                    f'{exc_status.response.status_code=}\n'
-                    f'{exc_status.request.url=}\n'
+                    f"HTTP Error: {exc_status=}:\n"
+                    f"{exc_status.response.status_code=}\n"
+                    f"{exc_status.request.url=}\n"
                 )
                 raise
         except HTTPError as exc_http:
-            logger.exception(
-                f'HTTP Error: {exc_http=}:\n'
-                f'{exc_http.request.url=}\n'
-            )
+            logger.exception(f"HTTP Error: {exc_http=}:\n" f"{exc_http.request.url=}\n")
             raise
         except Exception as exc:
-            logger.exception(f'UNEXPECTED ERROR: {exc=}')
+            logger.exception(f"UNEXPECTED ERROR: {exc=}")
             raise
 
 
@@ -85,23 +91,23 @@ async def list_results_paginated(
 ) -> AsyncGenerator[dict, None]:
     should_continue: bool = True
     params: dict = {
-        'page': 1,
+        "page": 1,
     }
     if isinstance(additional_params, dict):
         params.update(additional_params)
     while should_continue:
         data_raw: dict = await get_response(
-            method='GET',
+            method="GET",
             url=url,
             params=params,
             username=username,
             password=password,
             proxies=proxies,
         )
-        results: list[dict] = get_value(src=data_raw, path=['results'], exp=list, default=[])
-        if not results or not get_value(src=data_raw, path=['info', 'next'], exp=str):
+        results: list[dict] = get_value(src=data_raw, path=["results"], exp=list, default=[])
+        if not results or not get_value(src=data_raw, path=["info", "next"], exp=str):
             should_continue = False
-        params['page'] += 1
+        params["page"] += 1
         for result in results:
             yield result
 
@@ -118,129 +124,41 @@ async def list_results(
     if isinstance(additional_params, dict):
         params.update(additional_params)
     data_raw: dict = await get_response(
-        method='GET',
+        method="GET",
         url=url,
         params=params,
         username=username,
         password=password,
         proxies=proxies,
     )
-    for result in get_value(src=data_raw, path=['results'], exp=list, default=[]):
+    for result in get_value(src=data_raw, path=["results"], exp=list, default=[]):
         await q.put(result)
 
 
-async def list_characters(
+async def search_adap(
     url: str,
+    search_filter: str,
     username: Optional[str] = None,
     password: Optional[str] = None,
     proxies: Optional[dict] = None,
     q: Optional[Queue] = None,
 ) -> None:
-    loop = get_running_loop()
-    r: dict = await get_response(url=url, username=username, password=password, proxies=proxies)
-    chars_url: str = get_value(src=r, path=['characters'], exp=str, default='')
-    if chars_url:
-        chars: dict = await get_response(
-            url=chars_url,
-            username=username,
-            password=password,
-            proxies=proxies,
-        )
-        pages: int = get_value(src=chars, path=['info', 'pages'], exp=int, default=0)
-        if pages:
-            for page in range(1, pages + 1):
-                task = loop.create_task(
-                    list_results(
-                        url=chars_url,
-                        additional_params={'page': page},
-                        username=username,
-                        password=password,
-                        proxies=proxies,
-                        q=q,
-                    )
-                )
-                contributing_tasks.append(task.get_name())
-                task.add_done_callback(
-                    lambda contributing_task: contributing_tasks.pop(
-                        contributing_tasks.index(contributing_task.get_name())
-                    )
-                )
-                task.add_done_callback(lambda contributing_task: contributing_task.cancel())
+    """Search ADAP endpoint with LDAP filter and paginate results.
 
-
-async def list_locations(
-    url: str,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    proxies: Optional[dict] = None,
-    q: Optional[Queue] = None,
-) -> None:
-    loop = get_running_loop()
-    r: dict = await get_response(url=url, username=username, password=password, proxies=proxies)
-    locations_url: str = get_value(src=r, path=['locations'], exp=str, default='')
-    if locations_url:
-        locations: dict = await get_response(
-            url=locations_url,
-            username=username,
-            password=password,
-            proxies=proxies,
-        )
-        pages: int = get_value(src=locations, path=['info', 'pages'], exp=int, default=0)
-        if pages:
-            for page in range(1, pages + 1):
-                task = loop.create_task(
-                    list_results(
-                        url=locations_url,
-                        additional_params={'page': page},
-                        username=username,
-                        password=password,
-                        proxies=proxies,
-                        q=q,
-                    )
-                )
-                contributing_tasks.append(task.get_name())
-                task.add_done_callback(
-                    lambda contributing_task: contributing_tasks.pop(
-                        contributing_tasks.index(contributing_task.get_name())
-                    )
-                )
-                task.add_done_callback(lambda contributing_task: contributing_task.cancel())
-
-
-async def list_episodes(
-    url: str,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    proxies: Optional[dict] = None,
-    q: Optional[Queue] = None,
-) -> None:
-    loop = get_running_loop()
-    r: dict = await get_response(url=url, username=username, password=password, proxies=proxies)
-    episodes_url: str = get_value(src=r, path=['episodes'], exp=str, default='')
-    if episodes_url:
-        episodes: dict = await get_response(
-            url=episodes_url,
-            username=username,
-            password=password,
-            proxies=proxies,
-        )
-        pages: int = get_value(src=episodes, path=['info', 'pages'], exp=int, default=0)
-        if pages:
-            for page in range(1, pages + 1):
-                task = loop.create_task(
-                    list_results(
-                        url=episodes_url,
-                        additional_params={'page': page},
-                        username=username,
-                        password=password,
-                        proxies=proxies,
-                        q=q,
-                    )
-                )
-                contributing_tasks.append(task.get_name())
-                task.add_done_callback(
-                    lambda contributing_task: contributing_tasks.pop(
-                        contributing_tasks.index(contributing_task.get_name())
-                    )
-                )
-                task.add_done_callback(lambda contributing_task: contributing_task.cancel())
+    Args:
+        url: Base ADAP endpoint URL (e.g., https://server:port/adap)
+        search_filter: LDAP search filter (e.g., "(cn=*)")
+        username: Username for authentication
+        password: Password for authentication
+        proxies: Optional proxy configuration
+        q: Queue to put results into
+    """
+    async for result in list_results_paginated(
+        url=url,
+        additional_params={"searchFilter": search_filter},
+        username=username,
+        password=password,
+        proxies=proxies,
+    ):
+        if q:
+            await q.put(result)
