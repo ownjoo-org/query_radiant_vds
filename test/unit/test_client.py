@@ -1,11 +1,11 @@
-"""Unit tests for template_cli.client module."""
+"""Unit tests for query_radiant_vds.client module."""
 
 from asyncio import Queue
 from unittest.mock import patch
 
 import pytest
 
-from template_cli.client import search_adap
+from query_radiant_vds.client import search_adap
 
 
 @pytest.mark.asyncio
@@ -19,7 +19,7 @@ async def test_search_adap_puts_results_in_queue() -> None:
 
     q: Queue = Queue()
 
-    with patch("template_cli.client.get_response") as mock_get_response:
+    with patch("query_radiant_vds.client.get_response") as mock_get_response:
         mock_get_response.return_value = adap_response
 
         await search_adap(

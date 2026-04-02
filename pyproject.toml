@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "template-cli"
+name = "query-radiant-vds"
 version = "0.1.0"
-description = "Template CLI application demonstrating async HTTP patterns with httpx and asyncio"
+description = "CLI for querying Radiant Logic IDM v8.1 via ADAP endpoint with async HTTP patterns"
 authors = [{name = "ownjoo-org"}]
 requires-python = ">=3.10"
 dependencies = [
@@ -27,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-template-cli = "template_cli.__main__:main"
+query-radiant-vds = "query_radiant_vds.__main__:main"
 
 [tool.black]
 line-length = 100
@@ -58,5 +58,5 @@ disallow_incomplete_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
-addopts = "--cov=template_cli --cov-report=html --cov-report=term-missing"
+addopts = "--cov=query_radiant_vds --cov-report=html --cov-report=term-missing"
 asyncio_mode = "auto"

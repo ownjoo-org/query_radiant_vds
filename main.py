@@ -8,7 +8,7 @@ from typing import Optional
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.parsing.consts import TimeFormats
 
-from template_cli.main import main
+from query_radiant_vds.main import main
 
 
 if __name__ == '__main__':

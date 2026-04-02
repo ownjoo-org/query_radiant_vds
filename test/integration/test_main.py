@@ -1,4 +1,4 @@
-"""Integration tests for template_cli.main module.
+"""Integration tests for query_radiant_vds.main module.
 
 These tests demonstrate integration testing patterns with real or near-real dependencies.
 Following ownjoo-org principles: prefer integration tests hitting real dependencies
@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from template_cli.main import main
+from query_radiant_vds.main import main
 
 
 @pytest.mark.asyncio
@@ -22,16 +22,16 @@ async def test_main_constructs_adap_url() -> None:
     - Test actual ADAP pagination logic
     """
     with (
-        patch("template_cli.main.search_adap") as mock_search,
-        patch("template_cli.main.json_out") as mock_output,
+        patch("query_radiant_vds.main.search_adap") as mock_search,
+        patch("query_radiant_vds.main.json_out") as mock_output,
     ):
 
         mock_search = AsyncMock()
         mock_output = AsyncMock()
 
         with (
-            patch("template_cli.main.search_adap", mock_search),
-            patch("template_cli.main.json_out", mock_output),
+            patch("query_radiant_vds.main.search_adap", mock_search),
+            patch("query_radiant_vds.main.json_out", mock_output),
         ):
 
             await main(

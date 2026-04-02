@@ -1,4 +1,4 @@
-# Claude Configuration for template_cli
+# Claude Configuration for query_radiant_vds
 
 This project follows [ownjoo-org](https://github.com/ownjoo-org) standards and guidelines.
 
@@ -41,7 +41,7 @@ This project demonstrates async HTTP patterns using:
 - **`retry-async`** — Automatic retry with exponential backoff
 - **`pytest-asyncio`** — Async test support
 
-See `template_cli/client.py` and `template_cli/main.py` for examples.
+See `query_radiant_vds/client.py` and `query_radiant_vds/main.py` for examples.
 
 ## Contributing
 

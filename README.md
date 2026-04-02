@@ -124,7 +124,7 @@ make run              # Show CLI help
 pytest
 
 # Run with coverage
-pytest --cov=template_cli
+pytest --cov=query_radiant_vds
 
 # Run specific test file
 pytest test/unit/test_client.py -v
@@ -147,11 +147,11 @@ All checks run automatically in the CI/CD pipeline (GitHub Actions).
 ### Module Structure
 
 ```
-template_cli/
+query_radiant_vds/
 ├── __init__.py          # Package initialization
 ├── __main__.py          # Module entry point
 ├── main.py              # Async orchestration (Queue, gather)
-├── client.py            # Async HTTP client with httpx
+├── client.py            # Async HTTP client with httpx (ADAP queries)
 ├── parser.py            # Output formatter (JSON)
 ├── tracker.py           # Task coordination
 └── consts.py            # Constants (retry config)
