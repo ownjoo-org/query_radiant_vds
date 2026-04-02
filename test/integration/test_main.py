@@ -4,66 +4,46 @@ These tests demonstrate integration testing patterns with real or near-real depe
 Following ownjoo-org principles: prefer integration tests hitting real dependencies
 over mocks that diverge from production behavior.
 """
-import pytest
+
 from unittest.mock import AsyncMock, patch
-from asyncio import Queue
+
+import pytest
 
 from template_cli.main import main
 
 
 @pytest.mark.asyncio
-async def test_main_fetches_all_endpoints() -> None:
-    """Test that main fetches characters, locations, and episodes.
+async def test_main_constructs_adap_url() -> None:
+    """Test that main constructs the correct ADAP URL.
 
     This is a simplified test showing the pattern. In production, you might:
-    - Use a test API server
+    - Use a test RadiantOne instance
     - Mock at the AsyncClient level (boundary)
-    - Test actual pagination logic
+    - Test actual ADAP pagination logic
     """
-    # Mock the client functions to avoid real API calls
-    with patch("template_cli.main.list_characters") as mock_chars, \
-         patch("template_cli.main.list_locations") as mock_locs, \
-         patch("template_cli.main.list_episodes") as mock_eps, \
-         patch("template_cli.main.json_out") as mock_output:
+    with (
+        patch("template_cli.main.search_adap") as mock_search,
+        patch("template_cli.main.json_out") as mock_output,
+    ):
 
-        mock_chars.return_value = AsyncMock()
-        mock_locs.return_value = AsyncMock()
-        mock_eps.return_value = AsyncMock()
-        mock_output.return_value = AsyncMock()
+        mock_search = AsyncMock()
+        mock_output = AsyncMock()
 
-        await main(
-            domain="https://rickandmortyapi.com/api",
-            username="test",
-            password="test",
-            proxies=None,
-        )
-
-        # Verify all three endpoints were queried
-        mock_chars.assert_called_once()
-        mock_locs.assert_called_once()
-        mock_eps.assert_called_once()
-        mock_output.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_main_coordinates_queue() -> None:
-    """Test that main sets up Queue coordination correctly."""
-    with patch("template_cli.main.Queue") as mock_queue_cls, \
-         patch("template_cli.main.gather") as mock_gather:
-
-        mock_queue = AsyncMock()
-        mock_queue_cls.return_value = mock_queue
-
-        with patch("template_cli.main.list_characters"), \
-             patch("template_cli.main.list_locations"), \
-             patch("template_cli.main.list_episodes"), \
-             patch("template_cli.main.json_out"):
+        with patch("template_cli.main.search_adap", mock_search), patch(
+            "template_cli.main.json_out", mock_output
+        ):
 
             await main(
-                domain="https://rickandmortyapi.com/api",
+                domain="radiant.example.com",
+                port=8080,
+                search_filter="(cn=*)",
                 username="test",
                 password="test",
+                proxies=None,
             )
 
-            # Verify gather was called with 5 items: 3 clients + parser + q.join()
-            assert mock_gather.await_count >= 1
+        # Verify search_adap was called with correct URL and filter
+        mock_search.assert_called_once()
+        call_args = mock_search.call_args
+        assert "https://radiant.example.com:8080/adap" in str(call_args)
+        assert "(cn=*)" in str(call_args)

@@ -1,53 +1,35 @@
 """Unit tests for template_cli.client module."""
-import pytest
+
+from asyncio import Queue
 from unittest.mock import AsyncMock, patch
 
-from template_cli.client import get_response
+import pytest
+
+from template_cli.client import search_adap
 
 
 @pytest.mark.asyncio
-async def test_get_response_success() -> None:
-    """Test successful HTTP response."""
-    expected_data = {"character": {"id": 1, "name": "Rick Sanchez"}}
+async def test_search_adap_puts_results_in_queue() -> None:
+    """Test search_adap puts ADAP entries into queue."""
+    adap_entry = {"dn": "cn=testuser,ou=users,dc=example,dc=com", "cn": "testuser"}
+    adap_response = {
+        "results": [adap_entry],
+        "info": {"next": None},
+    }
 
-    with patch("template_cli.client.AsyncClient") as mock_client:
-        mock_response = AsyncMock()
-        mock_response.json.return_value = expected_data
-        mock_response.raise_for_status = AsyncMock()
+    q: Queue = Queue()
 
-        mock_async_client = AsyncMock()
-        mock_async_client.__aenter__.return_value.request.return_value = mock_response
-        mock_async_client.__aexit__.return_value = AsyncMock()
+    with patch("template_cli.client.get_response") as mock_get_response:
+        mock_get_response.return_value = adap_response
 
-        with patch("template_cli.client.AsyncClient", return_value=mock_async_client):
-            result = await get_response(
-                url="https://rickandmortyapi.com/api/character/1",
-                username="test",
-                password="test",
-            )
-
-        assert result == expected_data
-
-
-@pytest.mark.asyncio
-async def test_get_response_404_returns_none() -> None:
-    """Test 404 response returns None."""
-    from httpx import HTTPStatusError, Response, Request
-
-    mock_request = Request("GET", "https://rickandmortyapi.com/api/character/9999")
-    mock_response = Response(404, request=mock_request)
-
-    with patch("template_cli.client.AsyncClient") as mock_client:
-        mock_async_client = AsyncMock()
-        mock_async_client.__aenter__.return_value.request.side_effect = HTTPStatusError(
-            "404", request=mock_request, response=mock_response
+        await search_adap(
+            url="https://radiant.example.com:8080/adap",
+            search_filter="(cn=testuser)",
+            username="test",
+            password="test",
+            q=q,
         )
 
-        with patch("template_cli.client.AsyncClient", return_value=mock_async_client):
-            result = await get_response(
-                url="https://rickandmortyapi.com/api/character/9999",
-                username="test",
-                password="test",
-            )
-
-        assert result is None
+        # Verify entry was put in queue
+        result = await q.get()
+        assert result == adap_entry
