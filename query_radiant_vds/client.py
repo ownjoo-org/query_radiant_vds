@@ -4,8 +4,8 @@ from asyncio import Queue
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
-from ownjoo_utils import get_value
-from ownjoo_utils.logging.decorators import timed_async_generator
+from ownjoo_toolkit import get_value
+from ownjoo_toolkit.logging.decorators import timed_async_generator
 from retry_async import retry
 
 from query_radiant_vds.consts import RETRY_BACKOFF_FACTOR, RETRY_COUNT

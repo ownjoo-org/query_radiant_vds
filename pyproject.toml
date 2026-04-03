@@ -12,8 +12,8 @@ dependencies = [
     "funcy",
     "httpx",
     "httpx[http2]",
+    "ownjoo-toolkit",
     "retry-async",
-    "ownjoo_utils @ git+https://github.com/ownjoo-org/utils.git",
 ]
 
 [project.optional-dependencies]
