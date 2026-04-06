@@ -5,8 +5,8 @@ from asyncio import run
 from sys import stderr
 from typing import Optional
 
-from ownjoo_toolkit.logging.consts import LOG_FORMAT
-from ownjoo_toolkit.parsing.consts import TimeFormats
+from oj_toolkit.logging.consts import LOG_FORMAT
+from oj_toolkit.parsing.consts import TimeFormats
 
 from query_radiant_vds.main import main
 

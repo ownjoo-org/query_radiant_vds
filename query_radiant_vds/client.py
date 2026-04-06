@@ -4,8 +4,8 @@ from asyncio import Queue
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
-from ownjoo_toolkit import get_value
-from ownjoo_toolkit.logging.decorators import timed_async_generator
+from oj_toolkit import dig
+from oj_toolkit.logging.decorators import timed_async_generator
 from retry_async import retry
 
 from query_radiant_vds.consts import RETRY_BACKOFF_FACTOR, RETRY_COUNT
@@ -146,7 +146,7 @@ async def list_results_paginated(
             password=password,
             proxies=proxies,
         )
-        results: list[dict] = get_value(src=data_raw, path=["results"], exp=list, default=[])
+        results: list[dict] = dig(src=data_raw, path=["results"], exp=list, default=[])
 
         if not results:
             break
@@ -160,7 +160,7 @@ async def list_results_paginated(
                 return
 
         # Check if there are more pages
-        if not get_value(src=data_raw, path=["info", "next"], exp=str):
+        if not dig(src=data_raw, path=["info", "next"], exp=str):
             break
 
         page += 1
@@ -185,7 +185,7 @@ async def list_results(
         password=password,
         proxies=proxies,
     )
-    for result in get_value(src=data_raw, path=["results"], exp=list, default=[]):
+    for result in dig(src=data_raw, path=["results"], exp=list, default=[]):
         await q.put(result)
 
 

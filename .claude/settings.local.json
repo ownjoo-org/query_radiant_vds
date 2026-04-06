@@ -5,7 +5,17 @@
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:github.com)",
       "Bash(git clone:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "WebFetch(domain:developer.radiantlogic.com)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(mypy template_cli)",
+      "Bash(grep -r template_cli --include=*.py --include=*.toml --include=*.md --include=*.txt .)",
+      "Bash(cd:*)",
+      "Bash(coverage run:*)",
+      "Bash(coverage report:*)",
+      "Bash(coverage html:*)",
+      "Bash(find /c/Users/eq_fu/Documents/work -type d -name *template*)"
     ]
   }
 }
