@@ -2,41 +2,33 @@
 
 import json
 import unittest
+from asyncio import Queue
 from io import StringIO
 from unittest.mock import patch
 
 from query_radiant_vds.parser import json_out
-from query_radiant_vds.tracker import contributing_tasks
 
 
 class TestJsonOutput(unittest.IsolatedAsyncioTestCase):
     """Tests for JSON output formatting."""
 
-    async def test_json_out_creates_valid_array_structure(self) -> None:
+    async def test_json_out_single_item(self) -> None:
         """Test that json_out outputs valid JSON array structure."""
-        from asyncio import Queue
-
         entry = {"dn": "cn=test", "cn": "test"}
         q = Queue()
         await q.put(entry)
-
-        contributing_tasks.clear()
-        contributing_tasks.append("test_task")
+        await q.put(None)  # sentinel
 
         output = StringIO()
-
         with patch("sys.stdout", output):
             await json_out(q)
 
         result = output.getvalue()
-        # Should start with [ and end with ]
         self.assertTrue(result.strip().startswith("["), "Output should start with [")
         self.assertTrue(result.strip().endswith("]"), "Output should end with ]")
 
     async def test_json_out_with_multiple_items(self) -> None:
         """Test JSON output with commas between items."""
-        from asyncio import Queue
-
         entries = [
             {"dn": "cn=user1", "cn": "user1"},
             {"dn": "cn=user2", "cn": "user2"},
@@ -44,36 +36,41 @@ class TestJsonOutput(unittest.IsolatedAsyncioTestCase):
         q = Queue()
         for entry in entries:
             await q.put(entry)
-
-        contributing_tasks.clear()
-        contributing_tasks.append("test_task")
+        await q.put(None)  # sentinel
 
         output = StringIO()
-
         with patch("sys.stdout", output):
             await json_out(q)
 
         result = output.getvalue()
-        # Should have comma separating items
         self.assertIn(",", result)
 
     async def test_json_out_empty_queue(self) -> None:
-        """Test JSON output with empty queue."""
-        from asyncio import Queue
-
+        """Test JSON output with no items (sentinel only)."""
         q = Queue()
-
-        contributing_tasks.clear()
+        await q.put(None)  # sentinel only
 
         output = StringIO()
-
         with patch("sys.stdout", output):
             await json_out(q)
 
         result = output.getvalue()
-        # Should output valid empty array
         self.assertIn("[", result)
         self.assertIn("]", result)
+
+    async def test_json_out_task_done_called_per_item(self) -> None:
+        """Test that task_done is called for each item so q.join() can complete."""
+        entries = [{"cn": "user1"}, {"cn": "user2"}]
+        q = Queue()
+        for entry in entries:
+            await q.put(entry)
+        await q.put(None)  # sentinel
+
+        with patch("sys.stdout", StringIO()):
+            await json_out(q)
+
+        # q.join() should return immediately (all task_done() calls made)
+        await q.join()
 
 
 class TestJsonFormatting(unittest.TestCase):
@@ -85,7 +82,6 @@ class TestJsonFormatting(unittest.TestCase):
 
         json_str = json.dumps(entry, indent=4)
 
-        # Should be valid JSON
         parsed = json.loads(json_str)
         self.assertEqual(parsed["cn"], "test")
 
@@ -110,11 +106,9 @@ class TestJsonFormatting(unittest.TestCase):
             {"cn": "user2"},
         ]
 
-        # Format as array with proper separators
         json_lines = [json.dumps(entry, indent=4) for entry in entries]
         json_array = "[\n" + ",\n".join(json_lines) + "\n]"
 
-        # Should be valid JSON
         parsed = json.loads(json_array)
         self.assertEqual(len(parsed), 2)
         self.assertEqual(parsed[0]["cn"], "user1")

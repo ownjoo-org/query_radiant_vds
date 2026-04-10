@@ -1,0 +1,202 @@
+{
+  "uuid": "a4ca985a-2cc0-4380-86d1-dea51c917d70",
+  "lastMigration": 33,
+  "name": "RadiantLogic VDS",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 8080,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "574970aa-c53a-4ad2-9c93-efe7b67712f8",
+      "type": "http",
+      "documentation": "Search endpoint",
+      "method": "get",
+      "endpoint": "adap/:base_dn",
+      "responses": [
+        {
+          "uuid": "7fdce67a-4cd5-4fba-87cc-64e4bba0306c",
+          "body": "{{setVar 'page_size' (queryParam 'count')}}\n{\n    \"resources\": [\n      {{#repeat (divide @page_size 2) comma=true}}\n        {\n          {{setVar 'username' (faker 'internet.username')}}\n        \t\"dn\": \"uid={{@username}},ou=People,o=SOMEOU\",\n        \t\"attributes\": {\n        \t\t\"actualdn\": \"uid={{@username}},ou=people,o=SOMEOU\",\n        \t\t\"teamName\": \"Global Operations (Carol Whitmore (847293))\",\n        \t\t\"uid\": \"{{@username}}\",\n        \t\t\"givenName\": \"Carol\",\n        \t\t\"objectClass\": [\n        \t\t\t\"SOMEOUPerson\",\n        \t\t\t\"top\",\n        \t\t\t\"organizationalPerson\",\n        \t\t\t\"person\",\n        \t\t\t\"inetOrgPerson\"\n        \t\t],\n        \t\t\"memberOf\": [\n        \t\t\t\"All_Users\",\n        \t\t\t\"Proxy_Users\",\n        \t\t\t\"SOME_SPECIAL_GROUP\",\n        \t\t\t\"Global_Prod_General_User\"\n        \t\t],\n        \t\t\"sn\": \"W\",\n        \t\t\"cn\": \"Carol\"\n        \t}\n        }\n      {{/repeat}}\n    ],\n    \"totalResults\": 1,\n    \"count\": {{divide @page_size 2}},\n    \"cookie\": \"{{faker 'string.alphanumeric' 16}}\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Users - objectclass=people",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "objectclass=person",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "987b34d3-c7e1-4007-8652-1380d0c3eab8",
+          "body": "{\n  \"resources\": [\n      {\n        {{setVar 'username' (faker 'internet.username')}}\n        \"dn\": \"uid={{@username}},ou=People,o=SOMEORG\",\n        \"attributes\": {\n            \"employmentCode\": \"A\",\n            \"mail\": \"{{email}}\",\n            \"site\": \"LK\",\n            \"uid\": \"{{@username}}\",\n            \"floor\": \"FL\",\n            \"costcenter\": \"004731\",\n            \"memberOf\": [\n                \"All_Users\",\n                \"Proxy_Users\",\n                \"SOMEORGEmployees_Only\",\n                \"ARCHER_BCM:_SC_Planner\",\n                \"cloudhealth-dfs-power-user\",\n                \"cloudhealth-standard\"\n            ],\n            \"BadgeID\": \"293847\",\n            \"actualdn\": \"uid={{@username}},ou=people,o=SOMEORG\",\n            \"postalAddress\": \"{{street}}\",\n            \"st\": \"{{faker 'location.state'}}\",\n            \"managerUID\": \"{{faker 'internet.username'}}\",\n            \"physt\": \"TX\",\n            \"objectClass\": [\n                \"SOMEORGPerson\",\n                \"top\",\n                \"organizationalPerson\",\n                \"person\",\n                \"inetOrgPerson\"\n            ],\n            \"corpCode\": \"312\",\n            \"middleInitial\": \"\",\n            \"sn\": \"Hartwell\",\n            \"employeeNumber\": \"482KP\",\n            \"phyl\": \"Lakewood\",\n            \"hrsDepartment\": \"App Services Admin\",\n            \"telephoneNumber\": \"{{phone}}\",\n            \"section\": \"00\",\n            \"PhysicalLocation\": \"LKWD\",\n            \"phyc\": \"{{countryCode}}\",\n            \"postalCode\": \"{{zipcode}}\",\n            \"preferredName\": \"Thomas\",\n            \"centercode\": \"LKW\",\n            \"physicalDeliveryOfficeName\": \"LK 00 FL 00 RM00\",\n            \"cn\": \"{{firstName}} {{lastName}}\",\n            \"managerLevel\": \"Professional\",\n            \"title\": \"{{title}}\",\n            \"mobile\": \"{{phone}}\",\n            \"businessCategory\": \"Business Technology\",\n            \"approverLevel\": \"L2\",\n            \"supervisor\": \"uid=x7qr429,ou=People,o=SOMEORG\",\n            \"buildingName\": \"00\",\n            \"givenName\": \"{{lastName}}\",\n            \"phypostaladdress\": \"1200 Commerce Blvd\",\n            \"employeeType\": \"SOMEORG Employee\",\n            \"phypostalcode\": \"{{zipcode}}\",\n            \"facsimileTelephoneNumber\": \"{{phone}}\",\n            \"l\": \"Lakewood\",\n            \"teamName\": \"Automation Tools & Unix Engineering (Marcus Delgado (591NR))\",\n            \"roomNumber\": \"RM00\",\n            \"region\": \"TX\",\n            \"c\": \"USA\",\n            \"managerCN\": \"Marcus Delgado\",\n            \"manager\": \"uid={{faker 'internet.username'}},ou=People,o=SOMEORG\"\n          }\n      }\n  ],\n  \"totalResults\": 1,\n  \"count\": 1,\n  \"cookie\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "User Details",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "(uid=*)",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2db5608f-5477-47c8-bd2b-a4ff455c8287",
+          "body": "{{setVar 'page_size' (queryParam 'count')}}\n{\n  \"resources\": [\n      {{#repeat (divide @page_size 2) comma=true}}\n      {\n        {{setVar 'groupname' (oneOf (array \"All_Users\" \"Proxy_Users\" \"SOME_SPECIAL_GROUP\" \"Global_Prod_General_User\"))}}\n          \"dn\": \"CN={{@groupname}},ou=Groups,o=SOMEORG\",\n          \"attributes\": {\n              \"owner\": \"uid=p3nk817,ou=people,o=someorg\",\n              \"actualdn\": \"CN={{@groupname}},ou=groups,o=SOMEORG\",\n              \"objectClass\": [\n                  \"groupOfUniqueNames\",\n                  \"top\",\n                  \"SOMEORGGroup\"\n              ],\n              \"description\": \"LDAP group to access salesforce DGN APP via OKTA\",\n              \"uniquemember\": [\n                  \"uid=m8xz561,ou=people,o=someorg\",\n                  \"uid=k4vw293,ou=people,o=someorg\",\n                  \"uid=n9bq745,ou=people,o=someorg\",\n                  \"uid=r6ty038,ou=people,o=someorg\"\n              ],\n              \"CN\": \"{{@groupname}}\"\n          }\n      }\n      {{/repeat}}\n  ],\n  \"totalResults\": 1,\n  \"count\": {{divide @page_size 2}},\n  \"cookie\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Group Info",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "objectclass=groupOfUniqueNames",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ec75a670-4782-4aa9-8151-8619cf258890",
+          "body": "{\n  \"resources\": [\n    {{setVar 'groupname' (oneOf (array \"All_Users\" \"Proxy_Users\" \"SOME_SPECIAL_GROUP\" \"Global_Prod_General_User\"))}}\n      {\n          \"dn\": \"CN={{@groupname}},ou=Groups,o=SOMEORG\",\n          \"attributes\": {\n              \"owner\": \"uid=p3nk817,ou=people,o=someorg\",\n              \"actualdn\": \"CN={{@groupname}},ou=groups,o=SOMEORG\",\n              \"objectClass\": [\n                  \"groupOfUniqueNames\",\n                  \"top\",\n                  \"SOMEORGGroup\"\n              ],\n              \"description\": \"LDAP group to access salesforce DGN APP via OKTA\",\n              \"uniquemember\": [\n                  \"uid=m8xz561,ou=people,o=someorg\",\n                  \"uid=k4vw293,ou=people,o=someorg\",\n                  \"uid=n9bq745,ou=people,o=someorg\",\n                  \"uid=r6ty038,ou=people,o=someorg\"\n              ],\n              \"CN\": \"{{@groupname}}\"\n          }\n      }\n  ],\n  \"totalResults\": 1,\n  \"count\": 1,\n  \"cookie\": null\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Group Details",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "cn=*",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0fd74ed8-ece3-4585-89cb-f27417228d33",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "574970aa-c53a-4ad2-9c93-efe7b67712f8"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

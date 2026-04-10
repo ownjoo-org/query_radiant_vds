@@ -1,26 +1,18 @@
-from asyncio import Queue, sleep, wait_for
+from asyncio import Queue
 from json import dumps
 from logging import getLogger
 
-from query_radiant_vds.tracker import contributing_tasks
-
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 async def json_out(q: Queue) -> None:
-    endl = ""  # start with nothing prepended
+    endl = ""
     print("[")
-    while not contributing_tasks:
-        logger.debug(f"CONTRIBUTING TASKS: Waiting to begin: {contributing_tasks=}")
-        await sleep(1)
-    while contributing_tasks:
-        try:
-            result_coroutine = q.get()
-            result = await wait_for(result_coroutine, 1)
-            if result:
-                print(f"{endl}{dumps(result, indent=4)}", end="")
-                endl = ",\n"  # prepend to this line the previous line's endl (no trailing ',' for JSON correctness)
-        except TimeoutError:
-            logger.debug(f"CONTRIBUTING TASKS: Timeout: {contributing_tasks=}")
+    while True:
+        result = await q.get()
+        q.task_done()
+        if result is None:
+            break
+        print(f"{endl}{dumps(result, indent=4)}", end="")
+        endl = ",\n"
     print("\n]")
-    q.task_done()

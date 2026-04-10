@@ -120,31 +120,33 @@ async def list_results_paginated(
 
     while True:
         params: dict = {
-            "searchFilter": search_filter,
-            "scope": scope,
-            "pageSize": page_size,
+            'filter': search_filter,
+            'scope': scope,
+            'sizeLimit': result_limit,
+            'count': page_size,
+            'startIndex': 0,
         }
 
         if attributes:
-            params["attributes"] = attributes
+            params['attributes'] = attributes
         if context:
-            params["context"] = context
+            params['context'] = context
         if return_mode:
-            params["returnMode"] = return_mode
+            params['returnMode'] = return_mode
 
         # Merge with additional_params if provided
         if isinstance(additional_params, dict):
             params.update(additional_params)
 
         data_raw: dict = await get_response(
-            method="GET",
+            method='GET',
             url=url,
             params=params,
             username=username,
             password=password,
             proxies=proxies,
         )
-        results: list[dict] = dig(src=data_raw, path=["results"], exp=list, default=[])
+        results: list[dict] = dig(src=data_raw, path=['resources'], exp=list, default=[])
 
         if not results:
             break
@@ -158,8 +160,9 @@ async def list_results_paginated(
                 return
 
         # Check if there are more pages
-        if not dig(src=data_raw, path=["info", "next"], exp=str):
+        if not dig(src=data_raw, path=["cookie"], exp=str) or len(results) < page_size:
             break
+        params['startIndex'] += page_size
 
 
 async def search_adap(
@@ -207,3 +210,5 @@ async def search_adap(
     ):
         if q:
             await q.put(result)
+    if q:
+        await q.put(None)  # sentinel: signals json_out that all results are enqueued

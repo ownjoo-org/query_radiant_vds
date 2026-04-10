@@ -2,20 +2,20 @@
 
 import unittest
 from asyncio import Queue
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from query_radiant_vds.client import list_results_paginated, search_adap
+from query_radiant_vds.client import get_response, list_results_paginated, search_adap
 
 
 class TestSearchADAP(unittest.IsolatedAsyncioTestCase):
     """Tests for ADAP search functionality."""
 
     async def test_search_adap_puts_results_in_queue(self) -> None:
-        """Test search_adap puts ADAP entries into queue."""
+        """Test search_adap puts ADAP entries into queue then sends sentinel."""
         adap_entry = {"dn": "cn=testuser,ou=users,dc=example,dc=com", "cn": "testuser"}
         adap_response = {
-            "results": [adap_entry],
-            "info": {"next": None},
+            "resources": [adap_entry],
+            "cookie": None,
         }
 
         q: Queue = Queue()
@@ -31,9 +31,11 @@ class TestSearchADAP(unittest.IsolatedAsyncioTestCase):
                 q=q,
             )
 
-            # Verify entry was put in queue
-            result = await q.get()
-            self.assertEqual(result, adap_entry)
+        result = await q.get()
+        self.assertEqual(result, adap_entry)
+
+        sentinel = await q.get()
+        self.assertIsNone(sentinel)
 
 
 class TestPagination(unittest.IsolatedAsyncioTestCase):
@@ -41,19 +43,16 @@ class TestPagination(unittest.IsolatedAsyncioTestCase):
 
     async def test_pagination_respects_result_limit(self) -> None:
         """Test that pagination stops at result_limit."""
-        # Create 30 entries (3 pages of 10)
         entries = [{"dn": f"cn=user{i}", "cn": f"user{i}"} for i in range(30)]
+        call_count = [0]
 
-        # Mock responses for 3 pages
         def mock_get_response_side_effect(*args, **kwargs):
-            page = kwargs.get("params", {}).get("page", 1)
-            if page == 1:
-                return {"results": entries[0:10], "info": {"next": "page2"}}
-            elif page == 2:
-                return {"results": entries[10:20], "info": {"next": "page3"}}
-            elif page == 3:
-                return {"results": entries[20:30], "info": {"next": None}}
-            return {"results": [], "info": {}}
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return {"resources": entries[0:10], "cookie": "cursor1"}
+            elif call_count[0] == 2:
+                return {"resources": entries[10:20], "cookie": "cursor2"}
+            return {"resources": entries[20:30], "cookie": None}
 
         with patch(
             "query_radiant_vds.client.get_response",
@@ -68,22 +67,20 @@ class TestPagination(unittest.IsolatedAsyncioTestCase):
             ):
                 results.append(result)
 
-            # Should stop at 15 results, not fetch all 30
             self.assertEqual(len(results), 15)
 
     async def test_pagination_no_limit_returns_all(self) -> None:
         """Test that pagination returns all results when result_limit=0."""
         entries = [{"dn": f"cn=user{i}", "cn": f"user{i}"} for i in range(25)]
+        call_count = [0]
 
         def mock_get_response_side_effect(*args, **kwargs):
-            page = kwargs.get("params", {}).get("page", 1)
-            if page == 1:
-                return {"results": entries[0:10], "info": {"next": "page2"}}
-            elif page == 2:
-                return {"results": entries[10:20], "info": {"next": "page3"}}
-            elif page == 3:
-                return {"results": entries[20:25], "info": {"next": None}}
-            return {"results": [], "info": {}}
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return {"resources": entries[0:10], "cookie": "cursor1"}
+            elif call_count[0] == 2:
+                return {"resources": entries[10:20], "cookie": "cursor2"}
+            return {"resources": entries[20:25], "cookie": None}
 
         with patch(
             "query_radiant_vds.client.get_response",
@@ -98,13 +95,12 @@ class TestPagination(unittest.IsolatedAsyncioTestCase):
             ):
                 results.append(result)
 
-            # Should return all 25 results
             self.assertEqual(len(results), 25)
 
     async def test_page_size_optimization(self) -> None:
         """Test that page_size is optimized when > result_limit."""
         adap_entry = {"dn": "cn=test", "cn": "test"}
-        adap_response = {"results": [adap_entry], "info": {"next": None}}
+        adap_response = {"resources": [adap_entry], "cookie": None}
 
         with patch(
             "query_radiant_vds.client.get_response", return_value=adap_response
@@ -118,39 +114,41 @@ class TestPagination(unittest.IsolatedAsyncioTestCase):
             ):
                 results.append(result)
 
-            # Verify that pageSize in params was set to 5 (optimized)
             call_args = mock_response.call_args
-            self.assertEqual(call_args[1]["params"]["pageSize"], 5)
+            self.assertEqual(call_args[1]["params"]["count"], 5)
 
 
 class TestGetResponse(unittest.IsolatedAsyncioTestCase):
     """Tests for low-level HTTP response handling."""
 
     async def test_get_response_returns_json(self) -> None:
-        """Test that get_response returns parsed JSON."""
-        expected_response = {"results": [{"cn": "test"}]}
+        """Test that get_response returns parsed JSON from the httpx response."""
+        expected_response = {"resources": [{"cn": "test"}]}
 
-        with patch("query_radiant_vds.client.get_response") as mock_get:
-            mock_get.return_value = expected_response
+        mock_response = MagicMock()
+        mock_response.json.return_value = expected_response
+        mock_response.raise_for_status = MagicMock()
 
-            from query_radiant_vds.client import get_response as real_get_response
+        mock_session = AsyncMock()
+        mock_session.request = AsyncMock(return_value=mock_response)
+        mock_session.headers = MagicMock()
+        mock_session.verify = True
 
-            result = await real_get_response(
-                url="https://radiant.example.com:8080/adap",
-            )
+        with patch("query_radiant_vds.client.AsyncClient") as MockClient:
+            MockClient.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+            MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
 
-            self.assertEqual(result, expected_response)
+            result = await get_response(url="https://radiant.example.com:8080/adap")
+
+        self.assertEqual(result, expected_response)
 
     async def test_get_response_params(self) -> None:
-        """Test that get_response accepts various parameters."""
+        """Test that get_response accepts the expected parameters."""
         import inspect
-
-        from query_radiant_vds.client import get_response
 
         sig = inspect.signature(get_response)
         params = list(sig.parameters.keys())
 
-        # Should have these parameters
         expected_params = [
             "url",
             "method",
@@ -165,53 +163,44 @@ class TestGetResponse(unittest.IsolatedAsyncioTestCase):
             self.assertIn(param, params)
 
 
-class TestListResults(unittest.IsolatedAsyncioTestCase):
-    """Tests for single-page results fetching."""
+class TestListResultsPaginated(unittest.IsolatedAsyncioTestCase):
+    """Tests for paginated results fetching."""
 
     async def test_list_results_single_page(self) -> None:
-        """Test fetching single page of results."""
+        """Test fetching a single page of results."""
         entries = [
             {"dn": "cn=user1", "cn": "user1"},
             {"dn": "cn=user2", "cn": "user2"},
         ]
-        response = {"results": entries}
-
-        q = Queue()
+        response = {"resources": entries, "cookie": None}
 
         with patch("query_radiant_vds.client.get_response") as mock_get:
             mock_get.return_value = response
 
-            from query_radiant_vds.client import list_results
-
-            await list_results(
+            results = []
+            async for result in list_results_paginated(
                 url="https://radiant.example.com:8080/adap",
-                additional_params={"searchFilter": "(cn=*)"},
-                q=q,
-            )
+                search_filter="(cn=*)",
+            ):
+                results.append(result)
 
-            # Verify entries were put in queue
-            for expected_entry in entries:
-                result = await q.get()
-                self.assertEqual(result, expected_entry)
+            self.assertEqual(results, entries)
 
     async def test_list_results_empty_response(self) -> None:
         """Test handling of empty results."""
-        response = {"results": []}
-
-        q = Queue()
+        response = {"resources": [], "cookie": None}
 
         with patch("query_radiant_vds.client.get_response") as mock_get:
             mock_get.return_value = response
 
-            from query_radiant_vds.client import list_results
-
-            await list_results(
+            results = []
+            async for result in list_results_paginated(
                 url="https://radiant.example.com:8080/adap",
-                q=q,
-            )
+                search_filter="(cn=*)",
+            ):
+                results.append(result)
 
-            # Queue should be empty
-            self.assertTrue(q.empty())
+            self.assertEqual(results, [])
 
 
 if __name__ == "__main__":

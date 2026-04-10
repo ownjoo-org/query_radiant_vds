@@ -5,7 +5,7 @@ This project follows [ownjoo-org](https://github.com/ownjoo-org) standards and g
 ## Key Standards
 
 - **Simplicity First** — Write the simplest code that solves the problem. No premature optimization.
-- **Integration Testing** — Prefer integration tests hitting real dependencies over mocks.
+- **Pragmatic Testing** — Both unit tests (mocked, fast) and integration tests (real dependencies) have their place. New features test-first; on-the-fly changes code-first is ok.
 - **No Defensive Code** — Only validate at system boundaries (CLI input, API responses). Trust internal code.
 - **Security by Default** — Never introduce command injection, XSS, SQL injection, or OWASP Top 10 vulnerabilities.
 - **Explicit Commits** — Use conventional commits with clear messages and `Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>`.

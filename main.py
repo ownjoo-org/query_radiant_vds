@@ -25,10 +25,10 @@ if __name__ == "__main__":
         help="Password for authentication",
     )
     parser.add_argument(
-        "--domain",
+        "--url",
         type=str,
         required=True,
-        help="RadiantOne server FQDN or IP address",
+        help="RadiantOne server URL with FQDN or IP address (ie. http://localhost)",
     )
     parser.add_argument(
         "--base-dn",
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     logging.basicConfig(
         format=LOG_FORMAT,
         level=args.log_level,
-        datefmt=TimeFormats.date_and_time.value,
+        datefmt=TimeFormats.DATE_AND_TIME.value,
         stream=stderr,
     )
     logger = logging.getLogger(__name__)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     run(
         main(
-            domain=args.domain,
+            url=args.url,
             port=args.port,
             base_dn=args.base_dn,
             search_filter=args.search_filter,

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 async def main(
-    domain: str,
+    url: str,
     port: int,
     base_dn: str,
     search_filter: str,
@@ -26,7 +26,7 @@ async def main(
     """Orchestrate ADAP search and JSON output.
 
     Args:
-        domain: RadiantOne server FQDN or IP
+        url: RadiantOne server FQDN or IP
         port: ADAP endpoint port
         search_filter: LDAP search filter
         username: Authentication username
@@ -39,7 +39,7 @@ async def main(
         page_size: Results per page
         proxies: Optional proxy configuration
     """
-    adap_url = f"https://{domain}:{port}/adap/{base_dn}"
+    adap_url = f"{url}:{port}/adap/{base_dn}"
     q = Queue(maxsize=100)
     client_coroutines: List[Coroutine] = [
         search_adap(

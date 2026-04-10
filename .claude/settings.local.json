@@ -15,7 +15,8 @@
       "Bash(coverage run:*)",
       "Bash(coverage report:*)",
       "Bash(coverage html:*)",
-      "Bash(find /c/Users/eq_fu/Documents/work -type d -name *template*)"
+      "Bash(find /c/Users/eq_fu/Documents/work -type d -name *template*)",
+      "Bash(gh api:*)"
     ]
   }
 }
