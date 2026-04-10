@@ -117,14 +117,12 @@ async def list_results_paginated(
         page_size = result_limit
 
     total_returned: int = 0
-    page: int = 1
 
     while True:
         params: dict = {
             "searchFilter": search_filter,
             "scope": scope,
             "pageSize": page_size,
-            "page": page,
         }
 
         if attributes:
@@ -162,31 +160,6 @@ async def list_results_paginated(
         # Check if there are more pages
         if not dig(src=data_raw, path=["info", "next"], exp=str):
             break
-
-        page += 1
-
-
-async def list_results(
-    url: str,
-    additional_params: Optional[dict] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    proxies: Optional[dict] = None,
-    q: Optional[Queue] = None,
-) -> None:
-    params: dict = {}
-    if isinstance(additional_params, dict):
-        params.update(additional_params)
-    data_raw: dict = await get_response(
-        method="GET",
-        url=url,
-        params=params,
-        username=username,
-        password=password,
-        proxies=proxies,
-    )
-    for result in dig(src=data_raw, path=["results"], exp=list, default=[]):
-        await q.put(result)
 
 
 async def search_adap(

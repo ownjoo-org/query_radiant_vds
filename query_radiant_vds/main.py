@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 async def main(
     domain: str,
     port: int,
+    base_dn: str,
     search_filter: str,
     username: str,
     password: str,
@@ -38,7 +39,7 @@ async def main(
         page_size: Results per page
         proxies: Optional proxy configuration
     """
-    adap_url = f"https://{domain}:{port}/adap"
+    adap_url = f"https://{domain}:{port}/adap/{base_dn}"
     q = Queue(maxsize=100)
     client_coroutines: List[Coroutine] = [
         search_adap(

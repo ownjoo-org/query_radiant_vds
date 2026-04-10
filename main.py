@@ -31,6 +31,12 @@ if __name__ == "__main__":
         help="RadiantOne server FQDN or IP address",
     )
     parser.add_argument(
+        "--base-dn",
+        type=str,
+        required=True,
+        help="Base DN",
+    )
+    parser.add_argument(
         "--port",
         type=int,
         required=False,
@@ -122,6 +128,7 @@ if __name__ == "__main__":
         main(
             domain=args.domain,
             port=args.port,
+            base_dn=args.base_dn,
             search_filter=args.search_filter,
             attributes=args.attributes,
             scope=args.scope,
