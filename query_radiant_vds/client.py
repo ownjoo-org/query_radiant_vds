@@ -4,24 +4,13 @@ from asyncio import Queue
 from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
-from oj_toolkit import dig
-from oj_toolkit.logging.decorators import timed_async_generator
-from retry_async import retry
 
-from query_radiant_vds.consts import RETRY_BACKOFF_FACTOR, RETRY_COUNT
+from query_radiant_vds.oj_toolkit.logging.decorators import timed_async_generator
+from query_radiant_vds.oj_toolkit.parsing.types import dig
 
 logger = logging.getLogger(__name__)
 
 
-@retry(
-    exceptions=Exception,
-    tries=RETRY_COUNT,
-    delay=1,
-    backoff=RETRY_BACKOFF_FACTOR,
-    max_delay=5,
-    logger=logger,
-    is_async=True,
-)
 async def get_response(
     url: str,
     method: str = "GET",
