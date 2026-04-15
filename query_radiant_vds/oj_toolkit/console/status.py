@@ -8,7 +8,7 @@ import sys
 from functools import wraps
 from typing import Callable, Optional
 
-from oj_toolkit.console.colors import Color
+from query_radiant_vds.oj_toolkit.console.colors import Color
 
 
 def status_line(
@@ -26,7 +26,7 @@ def status_line(
         Formatted status line string.
 
     Example:
-        >>> from oj_toolkit.console import status_line, Color
+        >>> from query_radiant_vds.oj_toolkit.console import status_line, Color
         >>> status_line("Status", "OK", Color.GREEN)
         'Status: OK'  (with green color on OK)
     """
@@ -123,7 +123,7 @@ def status_wrapped(status: str = "info") -> Callable:
         Decorator function.
 
     Example:
-        >>> from oj_toolkit.console import status_wrapped
+        >>> from query_radiant_vds.oj_toolkit.console import status_wrapped
         >>> @status_wrapped(status='ok')
         ... def operation():
         ...     return "Operation complete"

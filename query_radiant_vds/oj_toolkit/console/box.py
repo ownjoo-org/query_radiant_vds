@@ -8,7 +8,7 @@ import sys
 from functools import wraps
 from typing import Callable, Optional
 
-from oj_toolkit.console.terminal import (
+from query_radiant_vds.oj_toolkit.console.terminal import (
     border_chars,
     pad_visible,
     select_style,
@@ -191,7 +191,7 @@ def in_box(
         Decorator function.
 
     Example:
-        >>> from oj_toolkit.console import in_box
+        >>> from query_radiant_vds.oj_toolkit.console import in_box
         >>> @in_box(style='double', title="Result")
         ... def show_result():
         ...     return "Success!"

@@ -7,7 +7,7 @@ supporting iterables and convenient color methods.
 import sys
 from typing import Iterator, Optional, TextIO, Tuple
 
-from oj_toolkit.console.colors import Color
+from query_radiant_vds.oj_toolkit.console.colors import Color
 
 
 class ColoredText:

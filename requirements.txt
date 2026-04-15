@@ -1,4 +1,2 @@
 funcy
 httpx
-httpx[http2]
-

@@ -21,7 +21,7 @@ async def get_response(
     password: Optional[str] = None,
     proxies: Optional[dict] = None,
 ) -> Optional[dict]:
-    async with AsyncClient(follow_redirects=True, http2=True) as session:
+    async with AsyncClient(follow_redirects=True) as session:
         try:
             if isinstance(proxies, dict):
                 session.proxies = proxies

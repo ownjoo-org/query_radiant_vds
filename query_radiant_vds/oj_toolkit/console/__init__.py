@@ -5,17 +5,17 @@ with support for colored output using ANSI escape codes, chainable colored text 
 and formatting utilities for tables, boxes, and status displays.
 """
 
-from oj_toolkit.console.box import Box, in_box
-from oj_toolkit.console.colored_text import ColoredText
-from oj_toolkit.console.colors import Color
-from oj_toolkit.console.status import (
+from query_radiant_vds.oj_toolkit.console.box import Box, in_box
+from query_radiant_vds.oj_toolkit.console.colored_text import ColoredText
+from query_radiant_vds.oj_toolkit.console.colors import Color
+from query_radiant_vds.oj_toolkit.console.status import (
     progress_bar,
     status_badge,
     status_line,
     status_wrapped,
 )
-from oj_toolkit.console.streams import Output
-from oj_toolkit.console.table import Table, tabulated
+from query_radiant_vds.oj_toolkit.console.streams import Output
+from query_radiant_vds.oj_toolkit.console.table import Table, tabulated
 
 __all__ = [
     "Output",

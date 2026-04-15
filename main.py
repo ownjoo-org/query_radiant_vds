@@ -5,8 +5,8 @@ from asyncio import run
 from sys import stderr
 from typing import Optional
 
-from oj_toolkit.logging.consts import LOG_FORMAT
-from oj_toolkit.parsing.consts import TimeFormats
+from query_radiant_vds.oj_toolkit.logging.consts import LOG_FORMAT
+from query_radiant_vds.oj_toolkit.parsing.consts import TimeFormats
 
 from query_radiant_vds.main import main
 

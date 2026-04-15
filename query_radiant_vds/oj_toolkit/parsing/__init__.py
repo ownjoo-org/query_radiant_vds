@@ -7,6 +7,6 @@ Provides functions for:
 - Extracting and validating nested values from dicts/lists
 """
 
-from oj_toolkit.parsing.types import validate, get_datetime, dig, str_to_list
+from query_radiant_vds.oj_toolkit.parsing.types import validate, get_datetime, dig, str_to_list
 
 __all__ = ['validate', 'get_datetime', 'dig', 'str_to_list']

@@ -100,7 +100,7 @@ def visible_width(text: str) -> int:
         The number of visible characters (excluding ANSI codes).
 
     Example:
-        >>> from oj_toolkit.console import Color
+        >>> from query_radiant_vds.oj_toolkit.console import Color
         >>> colored = f"{Color.RED}Error{Color.RESET}"
         >>> visible_width(colored)  # Returns 5, not 20+
         5
@@ -128,7 +128,7 @@ def pad_visible(text: str, width: int, align: str = "left", fill: str = " ") -> 
         Padded text with correct visible width.
 
     Example:
-        >>> from oj_toolkit.console import Color
+        >>> from query_radiant_vds.oj_toolkit.console import Color
         >>> colored = f"{Color.RED}Hi{Color.RESET}"
         >>> padded = pad_visible(colored, 10, align='left')
         >>> visible_width(padded)  # Returns 10

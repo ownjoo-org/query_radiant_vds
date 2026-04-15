@@ -28,6 +28,7 @@ async def main(
     Args:
         url: RadiantOne server FQDN or IP
         port: ADAP endpoint port
+        base_dn: Base DN for ADAP search
         search_filter: LDAP search filter
         username: Authentication username
         password: Authentication password

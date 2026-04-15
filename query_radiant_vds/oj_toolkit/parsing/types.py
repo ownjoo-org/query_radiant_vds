@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional, Type, TypeVar, Union
 T = TypeVar('T')
 R = TypeVar('R')
 
-from oj_toolkit.parsing.consts import DEFAULT_CONVERTER, DEFAULT_SEPARATOR, DEFAULT_VALIDATOR, TimeFormats
+from query_radiant_vds.oj_toolkit.parsing.consts import DEFAULT_CONVERTER, DEFAULT_SEPARATOR, DEFAULT_VALIDATOR, TimeFormats
 
 logger = logging.getLogger(__name__)
 

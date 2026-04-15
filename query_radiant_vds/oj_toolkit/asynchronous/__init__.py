@@ -8,6 +8,6 @@ This module is planned for future async utilities such as:
 
 Currently under development.
 """
-from oj_toolkit.asynchronous.async_chunks import a_chunks
+from query_radiant_vds.oj_toolkit.asynchronous.async_chunks import a_chunks
 
 __all__ = ["a_chunks"]

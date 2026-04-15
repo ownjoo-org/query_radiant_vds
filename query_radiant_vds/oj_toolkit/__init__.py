@@ -15,7 +15,7 @@ Usage:
     from oj_toolkit import Table, Box, status_line, progress_bar
 """
 
-from oj_toolkit.console import (
+from query_radiant_vds.oj_toolkit.console import (
     Box,
     Color,
     ColoredText,
@@ -28,8 +28,8 @@ from oj_toolkit.console import (
     status_wrapped,
     tabulated,
 )
-from oj_toolkit.logging import timed_async_generator, timed_generator
-from oj_toolkit.parsing import validate, get_datetime, dig, str_to_list
+from query_radiant_vds.oj_toolkit.logging import timed_async_generator, timed_generator
+from query_radiant_vds.oj_toolkit.parsing import validate, get_datetime, dig, str_to_list
 
 __all__ = [
     'timed_async_generator',

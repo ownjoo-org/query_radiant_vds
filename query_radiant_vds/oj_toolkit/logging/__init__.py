@@ -6,6 +6,6 @@ Provides decorators that wrap generator and async generator functions to:
 - Count items yielded
 """
 
-from oj_toolkit.logging.decorators import timed_generator, timed_async_generator
+from query_radiant_vds.oj_toolkit.logging.decorators import timed_generator, timed_async_generator
 
 __all__ = ['timed_generator', 'timed_async_generator']

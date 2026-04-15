@@ -11,8 +11,8 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 from typing import AsyncGenerator, Generator, Optional
 
-from oj_toolkit.logging.consts import LOG_FORMAT
-from oj_toolkit.parsing.consts import TimeFormats
+from query_radiant_vds.oj_toolkit.logging.consts import LOG_FORMAT
+from query_radiant_vds.oj_toolkit.parsing.consts import TimeFormats
 
 
 def timed_generator(
