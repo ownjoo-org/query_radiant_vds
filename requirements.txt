@@ -1,5 +1,4 @@
 funcy
 httpx
 httpx[http2]
-oj-toolkit
-retry-async
+
