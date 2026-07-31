@@ -5,8 +5,8 @@ from typing import AsyncGenerator, Optional
 
 from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
 
-from query_radiant_vds.oj_toolkit.logging.decorators import timed_async_generator
-from query_radiant_vds.oj_toolkit.parsing.types import dig
+from oj_toolkit.logging.decorators import timed_async_generator
+from oj_toolkit.parsing.types import dig
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +135,7 @@ async def list_results_paginated(
             password=password,
             proxies=proxies,
         )
-        results: list[dict] = dig(src=data_raw, path=['resources'], exp=list, default=[])
+        results: list[dict] = dig(src=data_raw, path='resources', exp=list, default=[])
 
         if not results:
             break
@@ -149,7 +149,7 @@ async def list_results_paginated(
                 return
 
         # Check if there are more pages
-        if not dig(src=data_raw, path=["cookie"], exp=str) or len(results) < page_size:
+        if not dig(src=data_raw, path='cookie', exp=str) or len(results) < page_size:
             break
         params['startIndex'] += page_size
 

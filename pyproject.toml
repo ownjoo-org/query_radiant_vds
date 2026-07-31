@@ -12,7 +12,7 @@ dependencies = [
     "funcy",
     "httpx",
     "httpx[http2]",
-    "oj-toolkit",
+    "oj-toolkit>=0.2.0",
     "retry-async",
 ]
 
