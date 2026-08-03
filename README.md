@@ -1,6 +1,7 @@
 # query_radiant_vds
 
 [![License](https://img.shields.io/github/license/ownjoo/query_radiant_vds)](LICENSE)
+[![Top language](https://img.shields.io/github/languages/top/ownjoo/query_radiant_vds)](https://github.com/ownjoo/query_radiant_vds) [![Stars](https://img.shields.io/github/stars/ownjoo/query_radiant_vds)](https://github.com/ownjoo/query_radiant_vds/stargazers) [![Forks](https://img.shields.io/github/forks/ownjoo/query_radiant_vds)](https://github.com/ownjoo/query_radiant_vds/forks) [![Issues](https://img.shields.io/github/issues/ownjoo/query_radiant_vds)](https://github.com/ownjoo/query_radiant_vds/issues) [![Pull requests](https://img.shields.io/github/issues-pr/ownjoo/query_radiant_vds)](https://github.com/ownjoo/query_radiant_vds/pulls)
 
 A Python CLI application for querying Radiant Logic IDM v8.1 via the ADAP (REST) endpoint. Demonstrates async HTTP patterns with `httpx`, `asyncio`, and `ownjoo-org/utils`.
 
