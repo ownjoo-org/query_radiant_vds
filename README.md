@@ -1,5 +1,7 @@
 # query_radiant_vds
 
+[![License](https://img.shields.io/github/license/ownjoo/query_radiant_vds)](LICENSE)
+
 A Python CLI application for querying Radiant Logic IDM v8.1 via the ADAP (REST) endpoint. Demonstrates async HTTP patterns with `httpx`, `asyncio`, and `ownjoo-org/utils`.
 
 ## Features
